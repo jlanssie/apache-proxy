@@ -1,12 +1,12 @@
-# Apache Gateway
+# Apache Reverse & Forward Proxy
 
-An Apache gateway for reaching a local web app on a dev machine from a test machine (such as a phone) and simultaneously reaching remote APIs.
+An Apache reverse & forward proxy for reaching a local resource (e.g. a web app) on a dev machine and remote resources from a test machine (such as a phone).
 
 ## Install Apache 
 
 Install Apache httpd
 
-## Configure Apache httpd.conf
+## Configure httpd.conf
 
 Find Apache httpd's main configuration file `httpd.conf` and open the file.
 
@@ -21,10 +21,10 @@ LoadModule proxy_http_module lib/httpd/modules/mod_proxy_http.so
 Include the proxy configuration by adding a reference to that config file, e.g.
 
 ```apache
-Include /opt/homebrew/etc/httpd/extra/gateway.conf
+Include /opt/homebrew/etc/httpd/extra/proxy.conf
 ````
 
-## Configure gateway 
+## Configure proxy.conf 
 
 Place the config file at the path specified in the Include directive. 
 
