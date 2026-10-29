@@ -1,79 +1,121 @@
 # Apache Forward & Reverse Proxy
 
-An Apache HTTP Server forward-and-reverse proxy.
+An Apache HTTP Server configuration designed to act as both a **forward proxy** (for reaching external remote resources/internet) and a **reverse proxy** (for routing traffic to local development applications).
 
-An Apache forward & reverse proxy for reaching a local resource (e.g. an app) and remote resources (e.g. the internet).
+## Installation
 
-## Installation 
+Install Apache HTTP Server (`httpd`).
 
-Install Apache httpd
+* **macOS (Homebrew):** `brew install httpd`
+* **Ubuntu/Debian:** `sudo apt install apache2`
+* **CentOS/RHEL:** `sudo yum install httpd`
+
+---
 
 ## Configuration
 
-### Confgiure httpd.conf
+### 1. Configure `httpd.conf`
 
-Find Apache httpd's main configuration file `httpd.conf` and open the file.
+Locate and open Apache’s main configuration file (`httpd.conf`).
 
-Load the proxy modules by uncommenting them, e.g.
+#### Enable Proxy Modules
+Uncomment (or add) the required proxy modules:
 
 ```apache
 LoadModule proxy_module lib/httpd/modules/mod_proxy.so
 LoadModule proxy_connect_module lib/httpd/modules/mod_proxy_connect.so
 LoadModule proxy_http_module lib/httpd/modules/mod_proxy_http.so
-````
+```
 
-Include the proxy configuration by adding a reference to that config file, e.g.
+#### Include Proxy Configuration
+Include your custom proxy configuration file by adding the following directive:
 
 ```apache
-
 Include /opt/homebrew/etc/httpd/extra/proxy.conf
-````
+```
 
-## Configure proxy.conf 
+---
 
-Place the config file at the path specified in the Include directive. 
+### 2. Configure `proxy.conf`
 
-Add a listen directive. 
+Create or update the proxy configuration file at the path specified in your `Include` directive above.
 
-````apache
+#### Global Settings
+
+Set Apache to listen on your designated proxy port:
+
+```apache
 Listen 8888
-````
+```
 
-Add a vhost config for reverse-proxied requests to your local resource, e.g. the web app on your dev machine.
+#### Reverse Proxy (Local Resources)
 
-````apache
+Add a VirtualHost block to route incoming requests to a local application (e.g., a web app running on your dev machine):
+
+```apache
 <VirtualHost *:8888>
     ServerName reverse.io
     ServerAlias local.myapp.com myapp.com
+    
     ProxyRequests Off
+    
     <Proxy *>
         Order deny,allow
         Deny from all
         Allow from all
     </Proxy>
+    
     ProxyPass        / "http://local.myapp.com:3000/"
-    ProxyPassReverse / "http://local.myapp.com:3000/""
+    ProxyPassReverse / "http://local.myapp.com:3000/"
     ProxyTimeout 300
-    ErrorLog "/opt/homebrew/var/log/httpd/myapp-reverse-error_log"
-    CustomLog "/opt/homebrew/var/log/httpd/myapp-reverse-access_log" common
+    
+    ErrorLog "/var/log/httpd/myproxy-reverse-error_log"
+    CustomLog /var/log/httpd/myproxy-reverse-access_log" common
 </VirtualHost>
-````
+```
 
-Add a vhost config for forward-proxied requests to remote resources, e.g. domains, APIs, websites on the internet. 
+#### Forward Proxy (Remote Resources / Internet)
 
-````apache
+Add a VirtualHost block to handle forward-proxied requests to external domains, APIs, and websites:
+
+```apache
 <VirtualHost *:8888>
     ServerName forward.io
     ServerAlias *
+    
     ProxyRequests On
     ProxyVia On
+    
     <Proxy *>
-      Require ip 192.168.0
+        Require ip 192.168.0
     </Proxy>
-    ErrorLog "/opt/homebrew/var/log/httpd/myapp-forward-error_log"
-    CustomLog "/opt/homebrew/var/log/httpd/myapp-forward-access_log" common
+    
+    ErrorLog "/var/log/httpd/myproxy-forward-error_log"
+    CustomLog "/var/log/httpd/myproxy-forward-access_log" common
 </VirtualHost>
-````
+```
+
+---
+
+## Usage & Testing
+
+Restart Apache to apply changes:
+* **macOS (Homebrew):** `brew services restart httpd`
+* **Linux:** `sudo systemctl restart apache2` (or `httpd`)
+
+### Testing the Reverse Proxy
+Send a request with the configured host header to target your local app:
+```bash
+curl -H "Host: local.myapp.com" http://localhost:8888/
+```
+
+### Testing the Forward Proxy
+Pass the proxy flag via `curl` to route an outbound HTTP request through Apache:
+```bash
+curl -x http://localhost:8888 http://example.com
+```
+
+---
 
 ## Contributing
 
