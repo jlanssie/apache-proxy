@@ -1,12 +1,16 @@
-# Apache Reverse & Forward Proxy
+# Apache Forward & Reverse Proxy
 
-An Apache reverse & forward proxy for reaching a local resource (e.g. a web app) on a dev machine and remote resources from a test machine (such as a phone).
+An Apache HTTP Server forward-and-reverse proxy.
 
-## Install Apache 
+An Apache forward & reverse proxy for reaching a local resource (e.g. an app) and remote resources (e.g. the internet).
+
+## Installation 
 
 Install Apache httpd
 
-## Configure httpd.conf
+## Configuration
+
+### Confgiure httpd.conf
 
 Find Apache httpd's main configuration file `httpd.conf` and open the file.
 
@@ -21,6 +25,7 @@ LoadModule proxy_http_module lib/httpd/modules/mod_proxy_http.so
 Include the proxy configuration by adding a reference to that config file, e.g.
 
 ```apache
+
 Include /opt/homebrew/etc/httpd/extra/proxy.conf
 ````
 
@@ -69,3 +74,11 @@ Add a vhost config for forward-proxied requests to remote resources, e.g. domain
     CustomLog "/opt/homebrew/var/log/httpd/myapp-forward-access_log" common
 </VirtualHost>
 ````
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss the proposed changes.
+
+## License
+
+[GNU GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
